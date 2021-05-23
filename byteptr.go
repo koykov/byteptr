@@ -7,6 +7,7 @@ import (
 
 type Byteptr struct {
 	addr          uint64
+	max           int
 	offset, limit int
 }
 
@@ -16,6 +17,7 @@ func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
 	}
 	h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 	p.addr = uint64(h.Data)
+	p.max = h.Cap
 	return p
 }
 
@@ -25,16 +27,24 @@ func (p *Byteptr) TakeStrAddr(s string) *Byteptr {
 	}
 	h := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	p.addr = uint64(h.Data)
+	p.max = h.Len
 	return p
 }
 
-func (p *Byteptr) Init(offset, limit int) *Byteptr {
-	p.offset, p.limit = offset, limit
+func (p *Byteptr) Init(s []byte, offset, limit int) *Byteptr {
+	p.TakeAddr(s).SetOffset(offset).SetLimit(limit)
+	return p
+}
+
+func (p *Byteptr) InitStr(s string, offset, limit int) *Byteptr {
+	p.TakeStrAddr(s).SetOffset(offset).SetLimit(limit)
 	return p
 }
 
 func (p *Byteptr) SetOffset(offset int) *Byteptr {
-	p.offset = offset
+	if offset < p.max {
+		p.offset = offset
+	}
 	return p
 }
 
@@ -43,7 +53,9 @@ func (p *Byteptr) Offset() int {
 }
 
 func (p *Byteptr) SetLimit(limit int) *Byteptr {
-	p.limit = limit
+	if limit < p.max {
+		p.limit = limit
+	}
 	return p
 }
 
@@ -75,7 +87,6 @@ func (p *Byteptr) String() string {
 }
 
 func (p *Byteptr) Reset() *Byteptr {
-	p.addr = 0
-	p.Init(0, 0)
+	p.addr, p.offset, p.limit = 0, 0, 0
 	return p
 }
