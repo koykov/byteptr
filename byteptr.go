@@ -6,40 +6,45 @@ import (
 )
 
 type Byteptr struct {
-	addr uint64
+	addr          uint64
 	offset, limit int
 }
 
-func (p *Byteptr) TakeAddr(s []byte) {
+func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
 	if s == nil {
-		return
+		return p
 	}
 	h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 	p.addr = uint64(h.Data)
+	return p
 }
 
-func (p *Byteptr) TakeStrAddr(s string) {
+func (p *Byteptr) TakeStrAddr(s string) *Byteptr {
 	if len(s) == 0 {
-		return
+		return p
 	}
 	h := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	p.addr = uint64(h.Data)
+	return p
 }
 
-func (p *Byteptr) Init(offset, limit int) {
+func (p *Byteptr) Init(offset, limit int) *Byteptr {
 	p.offset, p.limit = offset, limit
+	return p
 }
 
-func (p *Byteptr) SetOffset(offset int) {
+func (p *Byteptr) SetOffset(offset int) *Byteptr {
 	p.offset = offset
+	return p
 }
 
 func (p *Byteptr) Offset() int {
 	return p.offset
 }
 
-func (p *Byteptr) SetLimit(limit int) {
+func (p *Byteptr) SetLimit(limit int) *Byteptr {
 	p.limit = limit
+	return p
 }
 
 func (p *Byteptr) Limit() int {
@@ -69,7 +74,8 @@ func (p *Byteptr) String() string {
 	return *(*string)(unsafe.Pointer(&h))
 }
 
-func (p *Byteptr) Reset() {
+func (p *Byteptr) Reset() *Byteptr {
 	p.addr = 0
 	p.Init(0, 0)
+	return p
 }
