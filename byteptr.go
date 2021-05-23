@@ -42,7 +42,7 @@ func (p *Byteptr) InitStr(s string, offset, limit int) *Byteptr {
 }
 
 func (p *Byteptr) SetOffset(offset int) *Byteptr {
-	if offset < p.max {
+	if offset <= p.max {
 		p.offset = offset
 	}
 	return p
@@ -53,7 +53,7 @@ func (p *Byteptr) Offset() int {
 }
 
 func (p *Byteptr) SetLimit(limit int) *Byteptr {
-	if limit < p.max {
+	if limit <= p.max {
 		p.limit = limit
 	}
 	return p
@@ -68,7 +68,7 @@ func (p *Byteptr) Bytes() []byte {
 		return nil
 	}
 	h := reflect.SliceHeader{
-		Data: uintptr(p.offset),
+		Data: uintptr(p.addr + uint64(p.offset)),
 		Len:  p.limit,
 		Cap:  p.limit,
 	}
@@ -80,7 +80,7 @@ func (p *Byteptr) String() string {
 		return ""
 	}
 	h := reflect.StringHeader{
-		Data: uintptr(p.offset),
+		Data: uintptr(p.addr + uint64(p.offset)),
 		Len:  p.limit,
 	}
 	return *(*string)(unsafe.Pointer(&h))
