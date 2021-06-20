@@ -6,9 +6,9 @@ import (
 )
 
 type Byteptr struct {
-	addr          uint64
-	max           int
-	offset, limit int
+	addr uint64
+	max,
+	offset, len int
 }
 
 func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
@@ -31,13 +31,13 @@ func (p *Byteptr) TakeStrAddr(s string) *Byteptr {
 	return p
 }
 
-func (p *Byteptr) Init(s []byte, offset, limit int) *Byteptr {
-	p.TakeAddr(s).SetOffset(offset).SetLimit(limit)
+func (p *Byteptr) Init(s []byte, offset, len int) *Byteptr {
+	p.TakeAddr(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
-func (p *Byteptr) InitStr(s string, offset, limit int) *Byteptr {
-	p.TakeStrAddr(s).SetOffset(offset).SetLimit(limit)
+func (p *Byteptr) InitStr(s string, offset, len int) *Byteptr {
+	p.TakeStrAddr(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
@@ -52,41 +52,41 @@ func (p *Byteptr) Offset() int {
 	return p.offset
 }
 
-func (p *Byteptr) SetLimit(limit int) *Byteptr {
-	if limit <= p.max {
-		p.limit = limit
+func (p *Byteptr) SetLen(len int) *Byteptr {
+	if len <= p.max {
+		p.len = len
 	}
 	return p
 }
 
-func (p *Byteptr) Limit() int {
-	return p.limit
+func (p *Byteptr) Len() int {
+	return p.len
 }
 
 func (p *Byteptr) Bytes() []byte {
-	if p.addr == 0 || p.offset < 0 || p.limit < 0 {
+	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return nil
 	}
 	h := reflect.SliceHeader{
 		Data: uintptr(p.addr + uint64(p.offset)),
-		Len:  p.limit,
-		Cap:  p.limit,
+		Len:  p.len,
+		Cap:  p.len,
 	}
 	return *(*[]byte)(unsafe.Pointer(&h))
 }
 
 func (p *Byteptr) String() string {
-	if p.addr == 0 || p.offset < 0 || p.limit < 0 {
+	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return ""
 	}
 	h := reflect.StringHeader{
 		Data: uintptr(p.addr + uint64(p.offset)),
-		Len:  p.limit,
+		Len:  p.len,
 	}
 	return *(*string)(unsafe.Pointer(&h))
 }
 
 func (p *Byteptr) Reset() *Byteptr {
-	p.addr, p.offset, p.limit = 0, 0, 0
+	p.addr, p.offset, p.len = 0, 0, 0
 	return p
 }
