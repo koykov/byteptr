@@ -14,7 +14,7 @@ type Byteptr struct {
 	offset, len int
 }
 
-// Take address of underlying byte array of bytes s.
+// TakeAddr takes address of underlying byte array of bytes s.
 func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
 	if s == nil {
 		return p
@@ -25,7 +25,7 @@ func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
 	return p
 }
 
-// Take address of underlying byte array of string s.
+// TakeStrAddr takes address of underlying byte array of string s.
 func (p *Byteptr) TakeStrAddr(s string) *Byteptr {
 	if len(s) == 0 {
 		return p
@@ -36,19 +36,19 @@ func (p *Byteptr) TakeStrAddr(s string) *Byteptr {
 	return p
 }
 
-// Init p with address of the byte array s and offset/length.
+// Init ptr with address of the byte array s and offset/length.
 func (p *Byteptr) Init(s []byte, offset, len int) *Byteptr {
 	p.TakeAddr(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
-// Init p with address of the string s and offset/length.
+// InitStr ptr with address of the string s and offset/length.
 func (p *Byteptr) InitStr(s string, offset, len int) *Byteptr {
 	p.TakeStrAddr(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
-// Set offset from previously taken address.
+// SetOffset sets offset from previously taken address.
 func (p *Byteptr) SetOffset(offset int) *Byteptr {
 	if offset <= p.max {
 		p.offset = offset
@@ -56,12 +56,12 @@ func (p *Byteptr) SetOffset(offset int) *Byteptr {
 	return p
 }
 
-// Get offset.
-func (p *Byteptr) Offset() int {
+// Offset returns offset.
+func (p Byteptr) Offset() int {
 	return p.offset
 }
 
-// Set length of sub-slice.
+// SetLen sets length of sub-slice.
 func (p *Byteptr) SetLen(len int) *Byteptr {
 	if len <= p.max {
 		p.len = len
@@ -69,12 +69,11 @@ func (p *Byteptr) SetLen(len int) *Byteptr {
 	return p
 }
 
-// Get length.
-func (p *Byteptr) Len() int {
+func (p Byteptr) Len() int {
 	return p.len
 }
 
-// Get byte sub-slice using offset from previously take address with length len.
+// Bytes returns byte sub-slice using offset from previously take address with length len.
 func (p *Byteptr) Bytes() []byte {
 	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return nil
