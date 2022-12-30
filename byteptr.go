@@ -14,6 +14,20 @@ type Byteptr struct {
 	offset, len int
 }
 
+// Init makes new ptr and set up with given params.
+func Init(s []byte, offset, len int) Byteptr {
+	p := Byteptr{}
+	p.Init(s, offset, len)
+	return p
+}
+
+// InitStr makes new ptr and set up with given params.
+func InitStr(s string, offset, len int) Byteptr {
+	p := Byteptr{}
+	p.InitStr(s, offset, len)
+	return p
+}
+
 // TakeAddr takes address of underlying byte array of bytes s.
 func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
 	if s == nil {
@@ -107,3 +121,5 @@ func (p *Byteptr) Reset() *Byteptr {
 	p.addr, p.max, p.offset, p.len = 0, 0, 0, 0
 	return p
 }
+
+var _, _ = Init, InitStr
