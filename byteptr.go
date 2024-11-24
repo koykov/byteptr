@@ -1,9 +1,6 @@
 package byteptr
 
-import (
-	"reflect"
-	"unsafe"
-)
+import "unsafe"
 
 // Byteptr is a pointer-free representation of bytes/string types.
 //
@@ -21,44 +18,44 @@ func Init(s []byte, offset, len int) Byteptr {
 	return p
 }
 
-// InitStr makes new ptr and set up with given params.
-func InitStr(s string, offset, len int) Byteptr {
+// InitString makes new ptr and set up with given params.
+func InitString(s string, offset, len int) Byteptr {
 	p := Byteptr{}
-	p.InitStr(s, offset, len)
+	p.InitString(s, offset, len)
 	return p
 }
 
-// TakeAddr takes address of underlying byte array of bytes s.
-func (p *Byteptr) TakeAddr(s []byte) *Byteptr {
+// TakeAddress takes address of underlying byte array of bytes s.
+func (p *Byteptr) TakeAddress(s []byte) *Byteptr {
 	if s == nil {
 		return p
 	}
-	h := (*reflect.SliceHeader)(unsafe.Pointer(&s))
-	p.addr = h.Data
-	p.max = h.Cap
+	h := (*bheader)(unsafe.Pointer(&s))
+	p.addr = h.ptr
+	p.max = h.c
 	return p
 }
 
-// TakeStrAddr takes address of underlying byte array of string s.
-func (p *Byteptr) TakeStrAddr(s string) *Byteptr {
+// TakeStringAddress takes address of underlying byte array of string s.
+func (p *Byteptr) TakeStringAddress(s string) *Byteptr {
 	if len(s) == 0 {
 		return p
 	}
-	h := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	p.addr = h.Data
-	p.max = h.Len
+	h := (*sheader)(unsafe.Pointer(&s))
+	p.addr = h.ptr
+	p.max = h.l
 	return p
 }
 
 // Init ptr with address of the byte array s and offset/length.
 func (p *Byteptr) Init(s []byte, offset, len int) *Byteptr {
-	p.TakeAddr(s).SetOffset(offset).SetLen(len)
+	p.TakeAddress(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
-// InitStr ptr with address of the string s and offset/length.
-func (p *Byteptr) InitStr(s string, offset, len int) *Byteptr {
-	p.TakeStrAddr(s).SetOffset(offset).SetLen(len)
+// InitString ptr with address of the string s and offset/length.
+func (p *Byteptr) InitString(s string, offset, len int) *Byteptr {
+	p.TakeStringAddress(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
@@ -71,7 +68,7 @@ func (p *Byteptr) SetOffset(offset int) *Byteptr {
 }
 
 // Offset returns offset.
-func (p Byteptr) Offset() int {
+func (p *Byteptr) Offset() int {
 	return p.offset
 }
 
@@ -83,7 +80,7 @@ func (p *Byteptr) SetLen(len int) *Byteptr {
 	return p
 }
 
-func (p Byteptr) Len() int {
+func (p *Byteptr) Len() int {
 	return p.len
 }
 
@@ -92,10 +89,10 @@ func (p *Byteptr) Bytes() []byte {
 	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return nil
 	}
-	h := reflect.SliceHeader{
-		Data: p.addr + uintptr(p.offset),
-		Len:  p.len,
-		Cap:  p.len,
+	h := bheader{
+		ptr: p.addr + uintptr(p.offset),
+		l:   p.len,
+		c:   p.len,
 	}
 	return *(*[]byte)(unsafe.Pointer(&h))
 }
@@ -107,9 +104,9 @@ func (p *Byteptr) String() string {
 	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return ""
 	}
-	h := reflect.StringHeader{
-		Data: p.addr + uintptr(p.offset),
-		Len:  p.len,
+	h := sheader{
+		ptr: p.addr + uintptr(p.offset),
+		l:   p.len,
 	}
 	return *(*string)(unsafe.Pointer(&h))
 }
@@ -122,4 +119,4 @@ func (p *Byteptr) Reset() *Byteptr {
 	return p
 }
 
-var _, _ = Init, InitStr
+var _, _ = Init, InitString
