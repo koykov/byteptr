@@ -1,6 +1,6 @@
 # Byteptr
 
-Byteptr is a solution to manipulate with bytes/strings (and their parts) without
+[Pointer](pointer.go) is a solution to manipulate with bytes/strings (and their parts) without
 using pointers. It's a part of the reducing pointer policy.
 
 Byteptr is similar of [refrect.SliceHeader](https://golang.org/pkg/reflect/#SliceHeader)

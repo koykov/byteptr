@@ -2,31 +2,31 @@ package byteptr
 
 import "unsafe"
 
-// Byteptr is a pointer-free representation of bytes/string types.
+// Pointer is a pointer-free representation of bytes/string types.
 //
 // Similar to reflect.SliceHeader/reflect.StringHeader structs.
-type Byteptr struct {
+type Pointer struct {
 	addr uintptr
 	max,
 	offset, len int
 }
 
 // Init makes new ptr and set up with given params.
-func Init(s []byte, offset, len int) Byteptr {
-	p := Byteptr{}
+func Init(s []byte, offset, len int) Pointer {
+	p := Pointer{}
 	p.Init(s, offset, len)
 	return p
 }
 
 // InitString makes new ptr and set up with given params.
-func InitString(s string, offset, len int) Byteptr {
-	p := Byteptr{}
+func InitString(s string, offset, len int) Pointer {
+	p := Pointer{}
 	p.InitString(s, offset, len)
 	return p
 }
 
 // TakeAddress takes address of underlying byte array of bytes s.
-func (p *Byteptr) TakeAddress(s []byte) *Byteptr {
+func (p *Pointer) TakeAddress(s []byte) *Pointer {
 	if s == nil {
 		return p
 	}
@@ -37,7 +37,7 @@ func (p *Byteptr) TakeAddress(s []byte) *Byteptr {
 }
 
 // TakeStringAddress takes address of underlying byte array of string s.
-func (p *Byteptr) TakeStringAddress(s string) *Byteptr {
+func (p *Pointer) TakeStringAddress(s string) *Pointer {
 	if len(s) == 0 {
 		return p
 	}
@@ -48,19 +48,19 @@ func (p *Byteptr) TakeStringAddress(s string) *Byteptr {
 }
 
 // Init ptr with address of the byte array s and offset/length.
-func (p *Byteptr) Init(s []byte, offset, len int) *Byteptr {
+func (p *Pointer) Init(s []byte, offset, len int) *Pointer {
 	p.TakeAddress(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
 // InitString ptr with address of the string s and offset/length.
-func (p *Byteptr) InitString(s string, offset, len int) *Byteptr {
+func (p *Pointer) InitString(s string, offset, len int) *Pointer {
 	p.TakeStringAddress(s).SetOffset(offset).SetLen(len)
 	return p
 }
 
 // SetOffset sets offset from previously taken address.
-func (p *Byteptr) SetOffset(offset int) *Byteptr {
+func (p *Pointer) SetOffset(offset int) *Pointer {
 	if offset <= p.max {
 		p.offset = offset
 	}
@@ -68,24 +68,24 @@ func (p *Byteptr) SetOffset(offset int) *Byteptr {
 }
 
 // Offset returns offset.
-func (p *Byteptr) Offset() int {
+func (p *Pointer) Offset() int {
 	return p.offset
 }
 
 // SetLen sets length of sub-slice.
-func (p *Byteptr) SetLen(len int) *Byteptr {
+func (p *Pointer) SetLen(len int) *Pointer {
 	if len <= p.max {
 		p.len = len
 	}
 	return p
 }
 
-func (p *Byteptr) Len() int {
+func (p *Pointer) Len() int {
 	return p.len
 }
 
 // Bytes returns byte sub-slice using offset from previously take address with length len.
-func (p *Byteptr) Bytes() []byte {
+func (p *Pointer) Bytes() []byte {
 	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return nil
 	}
@@ -100,7 +100,7 @@ func (p *Byteptr) Bytes() []byte {
 // Get substring.
 //
 // See Bytes().
-func (p *Byteptr) String() string {
+func (p *Pointer) String() string {
 	if p.addr == 0 || p.offset < 0 || p.len < 0 {
 		return ""
 	}
@@ -114,7 +114,7 @@ func (p *Byteptr) String() string {
 // Reset all fields.
 //
 // Made to use with pools.
-func (p *Byteptr) Reset() *Byteptr {
+func (p *Pointer) Reset() *Pointer {
 	p.addr, p.max, p.offset, p.len = 0, 0, 0, 0
 	return p
 }
