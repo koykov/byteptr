@@ -5,17 +5,17 @@ import "unsafe"
 type KVPointer struct {
 	addr uintptr
 	max,
-	koffset, klen int
-	voffset, vlen int
+	offsetK, lenK int
+	offsetV, lenV int
 }
 
 func InitKV(s []byte, offset, len int) (p KVPointer) {
-	p.KVInit(s, offset, len)
+	p.InitKV(s, offset, len)
 	return
 }
 
 func InitStringKV(s string, offset, len int) (p KVPointer) {
-	p.KVInitString(s, offset, len)
+	p.InitStringKV(s, offset, len)
 	return
 }
 
@@ -39,63 +39,63 @@ func (p *KVPointer) TakeStringAddress(s string) *KVPointer {
 	return p
 }
 
-func (p *KVPointer) KVInit(s []byte, offset, len int) *KVPointer {
+func (p *KVPointer) InitKV(s []byte, offset, len int) *KVPointer {
 	p.TakeAddress(s).SetOffsetK(offset).SetLenK(len)
 	return p
 }
 
-func (p *KVPointer) KVInitString(s string, offset, len int) *KVPointer {
+func (p *KVPointer) InitStringKV(s string, offset, len int) *KVPointer {
 	p.TakeStringAddress(s).SetOffsetK(offset).SetLenK(len)
 	return p
 }
 
 func (p *KVPointer) SetOffsetK(offset int) *KVPointer {
 	if offset <= p.max {
-		p.koffset = offset
+		p.offsetK = offset
 	}
 	return p
 }
 
 func (p *KVPointer) OffsetK() int {
-	return p.koffset
+	return p.offsetK
 }
 
 func (p *KVPointer) SetLenK(len int) *KVPointer {
 	if len <= p.max {
-		p.klen = len
+		p.lenK = len
 	}
 	return p
 }
 
 func (p *KVPointer) LenK() int {
-	return p.klen
+	return p.lenK
 }
 
 func (p *KVPointer) BytesK() []byte {
-	if p.addr == 0 || p.koffset < 0 || p.klen < 0 {
+	if p.addr == 0 || p.offsetK < 0 || p.lenK < 0 {
 		return nil
 	}
 	h := bheader{
-		ptr: p.addr + uintptr(p.koffset),
-		l:   p.klen,
-		c:   p.klen,
+		ptr: p.addr + uintptr(p.offsetK),
+		l:   p.lenK,
+		c:   p.lenK,
 	}
 	return *(*[]byte)(unsafe.Pointer(&h))
 }
 
 func (p *KVPointer) kString() string {
-	if p.addr == 0 || p.koffset < 0 || p.klen < 0 {
+	if p.addr == 0 || p.offsetK < 0 || p.lenK < 0 {
 		return ""
 	}
 	h := sheader{
-		ptr: p.addr + uintptr(p.koffset),
-		l:   p.klen,
+		ptr: p.addr + uintptr(p.offsetK),
+		l:   p.lenK,
 	}
 	return *(*string)(unsafe.Pointer(&h))
 }
 
 func (p *KVPointer) Reset() *KVPointer {
-	p.addr, p.max, p.koffset, p.klen, p.koffset, p.klen = 0, 0, 0, 0, 0, 0
+	p.addr, p.max, p.offsetK, p.lenK, p.offsetK, p.lenK = 0, 0, 0, 0, 0, 0
 	return p
 }
 
