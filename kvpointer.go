@@ -40,17 +40,39 @@ func (p *KVPointer) TakeStringAddress(s string) *KVPointer {
 }
 
 func (p *KVPointer) InitKV(s []byte, offsetK, lenK, offsetV, lenV int) *KVPointer {
-	p.TakeAddress(s).SetOffsetK(offsetK).SetLenK(lenK).SetOffsetV(offsetV).SetLenV(lenV)
+	if s == nil {
+		return p.Reset()
+	}
+	p.TakeAddress(s)
+	p.offsetK, p.lenK = 0, 0
+	if offsetK >= 0 && lenK >= 0 && offsetK <= p.max && lenK <= p.max-offsetK {
+		p.offsetK, p.lenK = offsetK, lenK
+	}
+	p.offsetV, p.lenV = 0, 0
+	if offsetV >= 0 && lenV >= 0 && offsetV <= p.max && lenV <= p.max-offsetV {
+		p.offsetV, p.lenV = offsetV, lenV
+	}
 	return p
 }
 
 func (p *KVPointer) InitStringKV(s string, offsetK, lenK, offsetV, lenV int) *KVPointer {
-	p.TakeStringAddress(s).SetOffsetK(offsetK).SetLenK(lenK).SetOffsetV(offsetV).SetLenV(lenV)
+	if len(s) == 0 {
+		return p.Reset()
+	}
+	p.TakeStringAddress(s)
+	p.offsetK, p.lenK = 0, 0
+	if offsetK >= 0 && lenK >= 0 && offsetK <= p.max && lenK <= p.max-offsetK {
+		p.offsetK, p.lenK = offsetK, lenK
+	}
+	p.offsetV, p.lenV = 0, 0
+	if offsetV >= 0 && lenV >= 0 && offsetV <= p.max && lenV <= p.max-offsetV {
+		p.offsetV, p.lenV = offsetV, lenV
+	}
 	return p
 }
 
 func (p *KVPointer) SetOffsetK(offset int) *KVPointer {
-	if offset <= p.max {
+	if offset >= 0 && offset <= p.max {
 		p.offsetK = offset
 	}
 	return p
@@ -61,7 +83,7 @@ func (p *KVPointer) OffsetK() int {
 }
 
 func (p *KVPointer) SetLenK(len int) *KVPointer {
-	if len <= p.max {
+	if len >= 0 && len <= p.max-p.offsetK {
 		p.lenK = len
 	}
 	return p
@@ -72,7 +94,7 @@ func (p *KVPointer) LenK() int {
 }
 
 func (p *KVPointer) SetOffsetV(offset int) *KVPointer {
-	if offset <= p.max {
+	if offset >= 0 && offset <= p.max {
 		p.offsetV = offset
 	}
 	return p
@@ -83,7 +105,7 @@ func (p *KVPointer) OffsetV() int {
 }
 
 func (p *KVPointer) SetLenV(len int) *KVPointer {
-	if len <= p.max {
+	if len >= 0 && len <= p.max-p.offsetV {
 		p.lenV = len
 	}
 	return p
@@ -94,7 +116,7 @@ func (p *KVPointer) LenV() int {
 }
 
 func (p *KVPointer) BytesK() []byte {
-	if p.addr == 0 || p.offsetK < 0 || p.lenK < 0 {
+	if p.addr == 0 || p.offsetK < 0 || p.lenK < 0 || p.lenK > p.max-p.offsetK {
 		return nil
 	}
 	h := bheader{
@@ -106,7 +128,7 @@ func (p *KVPointer) BytesK() []byte {
 }
 
 func (p *KVPointer) StringK() string {
-	if p.addr == 0 || p.offsetK < 0 || p.lenK < 0 {
+	if p.addr == 0 || p.offsetK < 0 || p.lenK < 0 || p.lenK > p.max-p.offsetK {
 		return ""
 	}
 	h := sheader{
@@ -117,7 +139,7 @@ func (p *KVPointer) StringK() string {
 }
 
 func (p *KVPointer) BytesV() []byte {
-	if p.addr == 0 || p.offsetV < 0 || p.lenV < 0 {
+	if p.addr == 0 || p.offsetV < 0 || p.lenV < 0 || p.lenV > p.max-p.offsetV {
 		return nil
 	}
 	h := bheader{
@@ -129,7 +151,7 @@ func (p *KVPointer) BytesV() []byte {
 }
 
 func (p *KVPointer) StringV() string {
-	if p.addr == 0 || p.offsetV < 0 || p.lenV < 0 {
+	if p.addr == 0 || p.offsetV < 0 || p.lenV < 0 || p.lenV > p.max-p.offsetV {
 		return ""
 	}
 	h := sheader{
@@ -140,7 +162,7 @@ func (p *KVPointer) StringV() string {
 }
 
 func (p *KVPointer) Reset() *KVPointer {
-	p.addr, p.max, p.offsetK, p.lenK, p.offsetK, p.lenK = 0, 0, 0, 0, 0, 0
+	p.addr, p.max, p.offsetK, p.lenK, p.offsetV, p.lenV = 0, 0, 0, 0, 0, 0
 	return p
 }
 
