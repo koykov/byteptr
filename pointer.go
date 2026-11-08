@@ -49,19 +49,33 @@ func (p *Pointer) TakeStringAddress(s string) *Pointer {
 
 // Init ptr with address of the byte array s and offset/length.
 func (p *Pointer) Init(s []byte, offset, len int) *Pointer {
-	p.TakeAddress(s).SetOffset(offset).SetLen(len)
+	if s == nil {
+		return p.Reset()
+	}
+	p.TakeAddress(s)
+	p.offset, p.len = 0, 0
+	if offset >= 0 && len >= 0 && offset <= p.max && len <= p.max-offset {
+		p.offset, p.len = offset, len
+	}
 	return p
 }
 
 // InitString ptr with address of the string s and offset/length.
 func (p *Pointer) InitString(s string, offset, len int) *Pointer {
-	p.TakeStringAddress(s).SetOffset(offset).SetLen(len)
+	if s == "" {
+		return p.Reset()
+	}
+	p.TakeStringAddress(s)
+	p.offset, p.len = 0, 0
+	if offset >= 0 && len >= 0 && offset <= p.max && len <= p.max-offset {
+		p.offset, p.len = offset, len
+	}
 	return p
 }
 
 // SetOffset sets offset from previously taken address.
 func (p *Pointer) SetOffset(offset int) *Pointer {
-	if offset <= p.max {
+	if offset >= 0 && offset <= p.max {
 		p.offset = offset
 	}
 	return p
@@ -74,7 +88,7 @@ func (p *Pointer) Offset() int {
 
 // SetLen sets length of sub-slice.
 func (p *Pointer) SetLen(len int) *Pointer {
-	if len <= p.max {
+	if len >= 0 && len <= p.max-p.offset {
 		p.len = len
 	}
 	return p
@@ -86,7 +100,7 @@ func (p *Pointer) Len() int {
 
 // Bytes returns byte sub-slice using offset from previously take address with length len.
 func (p *Pointer) Bytes() []byte {
-	if p.addr == 0 || p.offset < 0 || p.len < 0 {
+	if p.addr == 0 || p.offset < 0 || p.len < 0 || p.len > p.max-p.offset {
 		return nil
 	}
 	h := bheader{
@@ -101,7 +115,7 @@ func (p *Pointer) Bytes() []byte {
 //
 // See Bytes().
 func (p *Pointer) String() string {
-	if p.addr == 0 || p.offset < 0 || p.len < 0 {
+	if p.addr == 0 || p.offset < 0 || p.len < 0 || p.len > p.max-p.offset {
 		return ""
 	}
 	h := sheader{
